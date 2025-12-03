@@ -63,6 +63,32 @@ shapeButtons.forEach(btn => {
   });
 });
 
+// HUD toggle (mobile default hidden)
+const uiContainer = document.getElementById('ui-container');
+const showHudBtn = document.getElementById('show-hud-btn');
+const isMobile = () => window.innerWidth <= 768;
+
+const setHudVisible = (visible) => {
+  uiContainer.style.display = visible ? 'block' : 'none';
+  showHudBtn.textContent = visible ? 'Hide HUD' : 'Show HUD';
+};
+
+// initial state
+setHudVisible(!isMobile());
+
+showHudBtn.addEventListener('click', () => {
+  const visible = uiContainer.style.display !== 'none';
+  setHudVisible(!visible);
+});
+
+window.addEventListener('resize', () => {
+  if (isMobile()) {
+    setHudVisible(false);
+  } else {
+    setHudVisible(true);
+  }
+});
+
 // Resize Handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
