@@ -11,7 +11,8 @@ camera.position.z = 5;
 
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Allow slightly higher pixel ratio for sharper point sprites on HiDPI screens.
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
 renderer.setClearColor(0x000000, 0);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 

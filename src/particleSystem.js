@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export class ParticleSystem {
-  constructor(scene, count = 8000) {
+  constructor(scene, count = 12000) {
     this.scene = scene;
     this.count = count;
     this.color = new THREE.Color('#ff0055');
@@ -20,7 +20,7 @@ export class ParticleSystem {
     
     this.material = new THREE.PointsMaterial({
       color: this.color,
-      size: 0.05,
+      size: 0.035,
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
@@ -70,6 +70,20 @@ export class ParticleSystem {
 
   generateShape(type) {
     const arr = new Float32Array(this.count * 3);
+    // Sample a point inside an ellipsoid centered at (cx, cy, cz)
+    const randomInEllipsoid = (cx, cy, cz, rx, ry, rz, fuzz = 0) => {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+      const r = Math.cbrt(Math.random()); // Uniform density
+      const sinPhi = Math.sin(phi);
+      return {
+        x: cx + rx * r * sinPhi * Math.cos(theta) + (Math.random() - 0.5) * fuzz,
+        y: cy + ry * r * Math.cos(phi) + (Math.random() - 0.5) * fuzz,
+        z: cz + rz * r * sinPhi * Math.sin(theta) + (Math.random() - 0.5) * fuzz
+      };
+    };
     
     for (let i = 0; i < this.count; i++) {
       let x, y, z;
@@ -140,6 +154,39 @@ export class ParticleSystem {
         x = r * Math.cos(t * 2);
         z = r * Math.sin(t * 2);
         y = t * 0.3 - 3;
+      } else if (type === 'buddha') {
+        // Composite volumes to approximate a seated Buddha silhouette.
+        const region = Math.random();
+        
+        if (region < 0.16) {
+          // Head
+          const p = randomInEllipsoid(0, 1.6, 0, 0.35, 0.45, 0.35, 0.04);
+          x = p.x; y = p.y; z = p.z;
+        } else if (region < 0.24) {
+          // Top bun / halo glow
+          const p = randomInEllipsoid(0, 1.95, 0, 0.25, 0.18, 0.25, 0.05);
+          x = p.x; y = p.y; z = p.z;
+        } else if (region < 0.46) {
+          // Shoulders and upper arms
+          const side = Math.random() > 0.5 ? 1 : -1;
+          const p = randomInEllipsoid(side * 0.55, 1.1, 0, 0.55, 0.28, 0.35, 0.04);
+          x = p.x; y = p.y; z = p.z;
+        } else if (region < 0.7) {
+          // Torso / lap
+          const p = randomInEllipsoid(0, 0.6, 0, 0.9, 0.45, 0.6, 0.05);
+          x = p.x; y = p.y; z = p.z;
+        } else if (region < 0.92) {
+          // Folded legs / base cushion
+          const p = randomInEllipsoid(0, 0, 0, 1.2, 0.35, 0.9, 0.06);
+          x = p.x; y = p.y; z = p.z;
+        } else {
+          // A few floating sparkles around the halo
+          const theta = Math.random() * Math.PI * 2;
+          const radius = 1.2 + Math.random() * 0.6;
+          x = radius * Math.cos(theta);
+          z = radius * Math.sin(theta);
+          y = 1.8 + (Math.random() - 0.5) * 0.3;
+        }
       } else {
         // Default sphere
         const theta = Math.random() * Math.PI * 2;
